@@ -5,21 +5,79 @@ output:
     keep_md: true
 ---
 
+```{r setup, include=F}
+knitr::opts_chunk$set(echo = TRUE, warning = F)
+library(tidyverse);library(zoo);library(ggplot2)
+library(plotly);library(formattable)
+
+```
+
 
 ## Loading and preprocessing the data
-
+```{r load_data}
+raw <- read.csv('activity.csv') %>% mutate(date = as.POSIXct(date, "%Y-%m-$d"))
+```
+Please note that the packages loaded for this assignment were tidyverse, formattable, zoo, ggplot2 and plotly. 
 
 
 ## What is mean total number of steps taken per day?
+```{r steps_per_day}
+steps_per_day <- raw %>% group_by(date) %>% summarise(steps_per_day = sum(steps, na.rm = T))
+
+hist <- plot_ly(data = steps_per_day, nbinsx = 15, alpha = 0.6) %>% add_histogram(x = ~steps_per_day) %>% layout(title = 'Histogram of the number of steps taken per day',yaxis = list(title = "Frequency"),xaxis = list(title = "Daily steps"))
+hist
+
+paste0('The average number of steps taken per day is ',comma(mean(steps_per_day$steps_per_day),1),'.')
+
+paste0('The median number of steps taken per day is ',comma(median(steps_per_day$steps_per_day),0),'.')
+
+```
+
 
 
 
 ## What is the average daily activity pattern?
+```{r daily_pattern}
+daily_pattern <- raw %>% group_by(interval) %>% summarise(mean_per_interval = mean(steps, na.rm = T))
+
+daily_plot <- plot_ly(data = daily_pattern) %>% add_trace(x = ~interval, y = ~mean_per_interval, type = 'scatter', mode = 'lines',  hoverinfo = 'text', text = ~paste('<b>','</br> Interval: ','</b>',interval,'<b>','</br> Steps per interval: ','</b>', comma(mean_per_interval,1))) %>% layout(title = 'Mean steps per daily interval', yaxis = list(title = 'steps'), xaxis = list(title = 'interval'))
+daily_plot
+```
+
 
 
 
 ## Imputing missing values
+```{r missing_data}
+paste0('There are ',nrow(raw) - nrow(raw %>% filter_all(~!is.na(.))),' rows with missing data.')
+```
+```{r imputed_set}
+imputed <- raw %>% group_by(interval) %>% mutate_at(vars(steps), ~na.aggregate(.))
+head(imputed)
+
+```
+
+```{r hist_imputed_set}
+
+imputed_steps_per_day <- imputed %>% group_by(date) %>% summarise(imputed_steps_per_day = sum(steps, na.rm = T))
+
+hist <- plot_ly(data = imputed_steps_per_day, nbinsx = 15, alpha = 0.6) %>% add_histogram(x = ~imputed_steps_per_day) %>% layout(title = 'Histogram of the number of steps taken per day',yaxis = list(title = "Frequency"),xaxis = list(title = "Daily steps"))
+hist
+
+paste0('The average number of steps taken per day is after imputing missing values is ',comma(mean(imputed_steps_per_day$imputed_steps_per_day),1),' while the unimputed average was ',comma(mean(steps_per_day$steps_per_day),1),'. This represents a difference of ',abs(comma(mean(steps_per_day$steps_per_day),1)-comma(mean(imputed_steps_per_day$imputed_steps_per_day),1)),' steps.')
+
+paste0('The median number of steps taken per day is after imputing missing values is ',comma(median(imputed_steps_per_day$imputed_steps_per_day),1),' while the unimputed median was ',comma(median(steps_per_day$steps_per_day),1),'. This represents a difference of ',abs(comma(median(steps_per_day$steps_per_day),1)-comma(median(imputed_steps_per_day$imputed_steps_per_day),1)),' steps.')
+
+paste0('Since the mean and median approached themselves after imputation, the resulting distribution is therefore less skewed (in fact not skewed at all since mean = median) than the raw set).')
+
+```
 
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+weekend <- suppressWarnings(imputed %>% mutate(weekday = weekdays(date),weekend = as.factor(ifelse(weekday %in% c('Saturday','Sunday'), 'weekend', 'weekday')))) %>% group_by(interval,weekend) %>% summarise(mean_per_interval = mean(steps, na.rm = T))
+
+ggplot(data = weekend) + geom_line(aes(x = interval, y = mean_per_interval, color = weekend), show.legend = F, size = 1.1) + facet_wrap(~weekend) + labs(title = 'Average steps per daily interval, weekend vs weekday', x = 'interval', y = 'steps')
+```
+
