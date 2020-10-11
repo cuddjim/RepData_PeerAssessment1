@@ -7,8 +7,7 @@ output:
 
 ```{r setup, include=F}
 knitr::opts_chunk$set(echo = TRUE, warning = F)
-library(tidyverse);library(zoo);library(ggplot2)
-library(plotly);library(formattable)
+library(tidyverse);library(zoo);library(ggplot2);library(formattable)
 
 ```
 
@@ -17,15 +16,14 @@ library(plotly);library(formattable)
 ```{r load_data}
 raw <- read.csv('activity.csv') %>% mutate(date = as.POSIXct(date, "%Y-%m-$d"))
 ```
-Please note that the packages loaded for this assignment were tidyverse, formattable, zoo, ggplot2 and plotly. 
+Please note that the packages loaded for this assignment were tidyverse, formattable, zoo, and ggplot2. 
 
 
 ## What is mean total number of steps taken per day?
 ```{r steps_per_day}
 steps_per_day <- raw %>% group_by(date) %>% summarise(steps_per_day = sum(steps, na.rm = T))
 
-hist <- plot_ly(data = steps_per_day, nbinsx = 15, alpha = 0.6) %>% add_histogram(x = ~steps_per_day) %>% layout(title = 'Histogram of the number of steps taken per day',yaxis = list(title = "Frequency"),xaxis = list(title = "Daily steps"))
-hist
+ggplot(data = steps_per_day, aes(x = steps_per_day)) + geom_histogram(fill = 'blue',color = 'blue', bins = 15, alpha = 0.7) + labs(title = 'Histogram of the number of steps taken per day', y = 'Frequency', x = 'Daily steps')
 
 paste0('The average number of steps taken per day is ',comma(mean(steps_per_day$steps_per_day),1),'.')
 
@@ -40,8 +38,8 @@ paste0('The median number of steps taken per day is ',comma(median(steps_per_day
 ```{r daily_pattern}
 daily_pattern <- raw %>% group_by(interval) %>% summarise(mean_per_interval = mean(steps, na.rm = T))
 
-daily_plot <- plot_ly(data = daily_pattern) %>% add_trace(x = ~interval, y = ~mean_per_interval, type = 'scatter', mode = 'lines',  hoverinfo = 'text', text = ~paste('<b>','</br> Interval: ','</b>',interval,'<b>','</br> Steps per interval: ','</b>', comma(mean_per_interval,1))) %>% layout(title = 'Mean steps per daily interval', yaxis = list(title = 'steps'), xaxis = list(title = 'interval'))
-daily_plot
+ggplot(data = daily_pattern, aes(x = interval, y = mean_per_interval)) + geom_line(color = 'red', size =1) + labs(title = 'Average steps per daily interval', x = 'interval', y = 'steps')
+
 ```
 
 
@@ -61,8 +59,7 @@ head(imputed)
 
 imputed_steps_per_day <- imputed %>% group_by(date) %>% summarise(imputed_steps_per_day = sum(steps, na.rm = T))
 
-hist <- plot_ly(data = imputed_steps_per_day, nbinsx = 15, alpha = 0.6) %>% add_histogram(x = ~imputed_steps_per_day) %>% layout(title = 'Histogram of the number of steps taken per day',yaxis = list(title = "Frequency"),xaxis = list(title = "Daily steps"))
-hist
+ggplot(data = imputed_steps_per_day, aes(x = imputed_steps_per_day)) + geom_histogram(fill = 'red',color = 'red', bins = 15, alpha = 0.7) + labs(title = 'Histogram of the number of steps taken per day',subtitle = 'No missing values', y = 'Frequency', x = 'Daily steps')
 
 paste0('The average number of steps taken per day is after imputing missing values is ',comma(mean(imputed_steps_per_day$imputed_steps_per_day),1),' while the unimputed average was ',comma(mean(steps_per_day$steps_per_day),1),'. This represents a difference of ',abs(comma(mean(steps_per_day$steps_per_day),1)-comma(mean(imputed_steps_per_day$imputed_steps_per_day),1)),' steps.')
 
