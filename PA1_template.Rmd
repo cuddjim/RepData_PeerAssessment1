@@ -72,7 +72,7 @@ paste0('Since the mean and median approached themselves after imputation, the re
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+```{r weekend}
 weekend <- suppressWarnings(imputed %>% mutate(weekday = weekdays(date),weekend = as.factor(ifelse(weekday %in% c('Saturday','Sunday'), 'weekend', 'weekday')))) %>% group_by(interval,weekend) %>% summarise(mean_per_interval = mean(steps, na.rm = T))
 
 ggplot(data = weekend) + geom_line(aes(x = interval, y = mean_per_interval, color = weekend), show.legend = F, size = 1.1) + facet_wrap(~weekend) + labs(title = 'Average steps per daily interval, weekend vs weekday', x = 'interval', y = 'steps')

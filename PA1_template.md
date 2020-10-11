@@ -129,5 +129,5 @@ weekend <- suppressWarnings(imputed %>% mutate(weekday = weekdays(date),weekend 
 ggplot(data = weekend) + geom_line(aes(x = interval, y = mean_per_interval, color = weekend), show.legend = F, size = 1.1) + facet_wrap(~weekend) + labs(title = 'Average steps per daily interval, weekend vs weekday', x = 'interval', y = 'steps')
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-1-1.png)<!-- -->
+![](PA1_template_files/figure-html/weekend-1.png)<!-- -->
 
