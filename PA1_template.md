@@ -11,7 +11,7 @@ output:
 ## Loading and preprocessing the data
 
 ```r
-raw <- read.csv('activity.csv') %>% mutate(date = as.POSIXct(date, "%Y-%m-$d"))
+raw_set <- read.csv('activity.csv') %>% mutate(date = as.POSIXct(date, "%Y-%m-$d"))
 ```
 Please note that the packages loaded for this assignment were tidyverse, formattable, zoo, and ggplot2. 
 
@@ -19,7 +19,7 @@ Please note that the packages loaded for this assignment were tidyverse, formatt
 ## What is mean total number of steps taken per day?
 
 ```r
-steps_per_day <- raw %>% group_by(date) %>% summarise(steps_per_day = sum(steps, na.rm = T))
+steps_per_day <- raw_set %>% group_by(date) %>% summarise(steps_per_day = sum(steps, na.rm = T))
 
 ggplot(data = steps_per_day, aes(x = steps_per_day)) + geom_histogram(fill = 'blue',color = 'blue', bins = 15, alpha = 0.7) + labs(title = 'Histogram of the number of steps taken per day', y = 'Frequency', x = 'Daily steps')
 ```
@@ -48,7 +48,7 @@ paste0('The median number of steps taken per day is ',comma(median(steps_per_day
 ## What is the average daily activity pattern?
 
 ```r
-daily_pattern <- raw %>% group_by(interval) %>% summarise(mean_per_interval = mean(steps, na.rm = T))
+daily_pattern <- raw_set %>% group_by(interval) %>% summarise(mean_per_interval = mean(steps, na.rm = T))
 
 ggplot(data = daily_pattern, aes(x = interval, y = mean_per_interval)) + geom_line(color = 'red', size =1) + labs(title = 'Average steps per daily interval', x = 'interval', y = 'steps')
 ```
@@ -61,7 +61,7 @@ ggplot(data = daily_pattern, aes(x = interval, y = mean_per_interval)) + geom_li
 ## Imputing missing values
 
 ```r
-paste0('There are ',nrow(raw) - nrow(raw %>% filter_all(~!is.na(.))),' rows with missing data.')
+paste0('There are ',nrow(raw_set) - nrow(raw_set %>% filter_all(~!is.na(.))),' rows with missing data.')
 ```
 
 ```
@@ -69,7 +69,7 @@ paste0('There are ',nrow(raw) - nrow(raw %>% filter_all(~!is.na(.))),' rows with
 ```
 
 ```r
-imputed <- raw %>% group_by(interval) %>% mutate_at(vars(steps), ~na.aggregate(.))
+imputed <- raw_set %>% group_by(interval) %>% mutate_at(vars(steps), ~na.aggregate(.))
 head(imputed)
 ```
 
